@@ -6,7 +6,7 @@ use_middle_proxy = false
 log_level = "normal"
 fast_mode = true
 update_every = 43200
-
+hardswap = false
 
 [general.modes]
 classic = false
@@ -25,18 +25,6 @@ client_handshake = 60
 client_keepalive = 60
 client_ack = 300
 
-[server]
-listen_addr_ipv4 = "0.0.0.0"
-listen_addr_ipv6 = "::"
-
-[[server.listeners]]
-ip = "0.0.0.0"
-port = 37621
-
-[[server.listeners]]
-ip = "::"
-port = 37621
-
 [censorship]
 tls_domain = "www.baidu.com"
 mask = true
@@ -52,7 +40,7 @@ replay_window_secs = 120
 ignore_time_skew = false
 
 [access.users]
-user = "c424506818ddd3919ef03bc65eb9047d"
+hello = "00000000000000000000000000000000"
 
 [[upstreams]]
 type = "direct"

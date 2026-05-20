@@ -74,6 +74,7 @@ sync_config() {
 		ipv6 = true
 		prefer = 4
 		multipath = false
+		http_ip_detect_urls = ["https://api6.ipify.org"]
 
 		[timeouts]
 		client_first_byte_idle_secs = 300

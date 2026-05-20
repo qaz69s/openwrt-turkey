@@ -88,7 +88,7 @@ return view.extend({
 
 		o = s.option(form.Value, 'tls_domain', 'TLS 伪装域名',
 			'用于 Fake-TLS (ee) 模式的 SNI 域名。更改后之前生成的 ee 链接将失效。');
-		o.placeholder = 'speedtest.cn';
+		o.placeholder = 'www.baidu.com';
 		o.datatype = 'hostname';
 
 		o = s.option(form.Flag, 'mask', '流量伪装',

@@ -1,5 +1,5 @@
 #!/bin/sh
-# luci.turkey -- rpcd RPC handler (kiwi style)
+# luci.turkey — rpcd RPC handler (kiwi style)
 
 readonly NAME="turkey"
 . /usr/share/libubox/jshn.sh
@@ -100,4 +100,3 @@ case "$1" in
 		esac
 		;;
 esac
-

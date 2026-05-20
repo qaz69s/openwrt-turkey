@@ -84,8 +84,6 @@ define Package/turkey/install
 
 	$(INSTALL_DIR) $(1)/usr/libexec
 	$(INSTALL_BIN) $(CURDIR)/files/turkey-ctrl.sh $(1)/usr/libexec/turkey-ctrl.sh
-
-	$(INSTALL_DIR) $(1)/var/lib/turkey
 endef
 
 define Package/turkey/postinst
