@@ -90,7 +90,7 @@ endef
 
 define Package/turkey/postinst
 #!/bin/sh
-[ -z "${IPKG_INSTROOT}" ] && chmod +x /usr/libexec/rpcd/luci.turkey /usr/libexec/turkey-ctrl.sh
+[ -z "${IPKG_INSTROOT}" -a -f /usr/libexec/turkey-ctrl.sh ] && chmod +x /usr/libexec/turkey-ctrl.sh
 exit 0
 endef
 
