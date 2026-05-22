@@ -17,3 +17,5 @@ PKG_LICENSE    := MIT
 PKG_MAINTAINER := Pi <pi@example.com>
 
 include $(TOPDIR)/feeds/luci/luci.mk
+# call BuildPackage - OpenWrt buildroot signature
+
