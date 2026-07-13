@@ -1,0 +1,22 @@
+{
+    "luci-app-turkey": {
+        "description": "Grant LuCI access to Turkey Telemt MTProxy",
+        "read": {
+            "file": {
+                "/etc/init.d/turkey": ["exec"],
+                "/usr/bin/turkey": ["read"]
+            },
+            "ubus": {
+                "service": ["list"],
+                "luci.turkey": ["getStatus", "getLog", "clearLog", "start", "stop", "restart"]
+            },
+            "uci": ["turkey"]
+        },
+        "write": {
+            "ubus": {
+                "luci.turkey": ["start", "stop", "restart"]
+            },
+            "uci": ["turkey"]
+        }
+    }
+}

@@ -1,0 +1,26 @@
+#!/bin/sh
+# First-boot ACL defaults — grants luci-app-turkey RPC access
+
+[ -n "${IPKG_INSTROOT}" ] && exit 0
+
+# Ensure rpcd config exists
+uci -c /etc/config show rpcd > /dev/null 2>&1 || {
+	uci -c /etc/config set rpcd=rpcd
+	uci -c /etc/config set rpcd.@rpcd[0]=rpcd
+}
+
+# Ensure ACL list exists and add our ACL
+uci -c /etc/config get rpcd.@rpcd[0].acl > /dev/null 2>&1 || {
+	uci -c /etc/config set rpcd.@rpcd[0].acl='luci-app-turkey'
+}
+
+# Check if luci-app-turkey is already in ACL list
+if ! uci -c /etc/config get rpcd.@rpcd[0].acl | grep -q 'luci-app-turkey'; then
+	acl=$(uci -c /etc/config get rpcd.@rpcd[0].acl)
+	uci -c /etc/config set rpcd.@rpcd[0].acl="${acl} luci-app-turkey"
+fi
+
+uci -c /etc/config commit rpcd
+/etc/init.d/rpcd restart 2>/dev/null || true
+
+exit 0

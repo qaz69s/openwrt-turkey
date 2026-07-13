@@ -1,0 +1,100 @@
+#!/bin/sh /etc/rc.common
+
+START=99
+STOP=10
+USE_PROCD=1
+PROG=/usr/bin/turkey
+CONF=/etc/turkey/turkey.toml
+LOG=/tmp/turkey.log
+
+_fw_rule_name() {
+	local port="${1:-8443}"
+	echo "turkey-${port}"
+}
+
+add_firewall_rule() {
+	local manage_firewall server_port
+	config_get_bool manage_firewall general manage_firewall 0
+	[ "$manage_firewall" -eq 1 ] || return 0
+	config_get server_port general port 8443
+
+	local name
+	name="$(_fw_rule_name "$server_port")"
+
+	uci show firewall | grep -q "name='${name}'" && return 0
+
+	uci batch <<-EOF
+		add firewall rule
+		set firewall.@rule[-1].name='${name}'
+		set firewall.@rule[-1].src='wan'
+		set firewall.@rule[-1].dest_port='${server_port}'
+		add_list firewall.@rule[-1].proto='tcp'
+		add_list firewall.@rule[-1].proto='udp'
+		set firewall.@rule[-1].target='ACCEPT'
+		commit firewall
+	EOF
+	/etc/init.d/firewall reload
+}
+
+remove_firewall_rule() {
+	local section changed=0
+	for section in $(uci show firewall | grep "name='turkey-" | cut -d. -f2); do
+		uci delete "firewall.${section}"
+		changed=1
+	done
+	[ "$changed" -eq 1 ] || return 0
+	uci commit firewall
+	/etc/init.d/firewall reload
+}
+
+start_service() {
+	local enabled
+	config_load turkey
+	config_get_bool enabled general enabled 0
+
+	[ "$enabled" -eq 1 ] || return 0
+
+	/usr/libexec/turkey-ctrl.sh sync_config
+	add_firewall_rule
+
+	procd_open_instance
+	procd_set_param command /bin/sh
+	procd_append_param command -c
+	procd_append_param command "ulimit -f 2048; exec env NO_COLOR=1 $PROG $CONF --silent 2>&1 | awk '{gsub(/\\033\\[[0-9;]*[a-zA-Z]/,\"\");print}' > $LOG"
+	procd_set_param respawn 3600 5 5
+	procd_close_instance
+}
+
+stop_service() {
+	config_load turkey
+	remove_firewall_rule
+
+	local pid
+	pid=$(pidof /usr/bin/turkey 2>/dev/null)
+	[ -n "$pid" ] && kill "$pid" 2>/dev/null
+
+	# 等 3 秒，杀不掉就 SIGKILL
+	local waited=0
+	while [ "$waited" -lt 3 ]; do
+		pid=$(pidof /usr/bin/turkey 2>/dev/null)
+		[ -z "$pid" ] && break
+		sleep 1
+		waited=$((waited + 1))
+	done
+
+	pid=$(pidof /usr/bin/turkey 2>/dev/null)
+	[ -n "$pid" ] && kill -9 "$pid" 2>/dev/null
+
+	# 清理残留的 awk 日志进程
+	pid=$(pgrep -f "turkey.*awk" 2>/dev/null)
+	[ -n "$pid" ] && kill -9 "$pid" 2>/dev/null
+}
+
+service_triggers() {
+	procd_add_reload_trigger turkey
+}
+
+reload_service() {
+	stop
+	start
+}
